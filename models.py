@@ -1,19 +1,19 @@
 import datetime
 from peewee import *
 
-db = SqliteDatabase('db.db')
+db = SqliteDatabase('db1.db')
 
 class BaseModel(Model):
     class Meta:
         database = db
 
-class tasks(BaseModel):
+class Tasks(BaseModel):
     id = AutoField()
     title = CharField()
-    description = CharField
+    description = CharField()
     done = BooleanField()
 
-#first = tasks(id=1,title='Buy groceries' , description ='Milk, Cheese, Pizza, Fruit, Tylenol', done=False)
+       # Tasks.create_table()
+        #first = Tasks(title='Buy groceries' , description ='Milk, Cheese, Pizza, Fruit, Tylenol', done=False).save()
 
-#second = tasks(id=2,title='Learn python ' , description ='Need to find a good Python tutorial on the web', done=False)
-#tasks.create_table()
+       # second = Tasks(title='Learn python ' , description ='Need to find a good Python tutorial on the web', done=False).save()

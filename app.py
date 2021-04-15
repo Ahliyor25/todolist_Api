@@ -3,66 +3,50 @@ from models import *
 
 app = Flask(__name__)
 
-tasks = [
-    {
-        'id': 1,
-        'title': u'Изучить Python ',
-        'description': u'Такие как flask ', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Изучить api ',
-        'description': u'REST FULL API', 
-        'done': False
-    
-    }
-]
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 @app.route('/todo/api/v1.0/tasks', methods=['GET'])
 def get_tasks():
-
-    return jsonify({'tasks': tasks})
+    t  = Tasks.select()
+    selector = []
+    for i in range(len(t)):
+        selector.append({ 
+            'id':str(t[i].id),
+            'title':str(t[i].title),
+            'description':str(t[i].description),
+            'status':str(t[i].done),
+            })
+    return jsonify(selector)
 
 @app.route('/todo/api/v1.0/tasks', methods=['POST'])
 def create_task():
     if not request.json or not 'title' in request.json:
         abort(400)
-    task = {
-        'id': tasks[-1]['id'] + 1,
-        'title': request.json['title'],
-        'description': request.json.get('description', ""),
-        'done': False
-    }
-    tasks.append(task)
-    return jsonify({'task': task}), 201
+
+    _title = request.json.get("title")
+    _description = request.json.get("Description")
+
+    row = Tasks(
+            title= _title,
+            description=_description,
+            done=False,
+    )
+    row.save()
+    return jsonify({"msg" : "ok"})
+  
+@app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    tsk = Tasks.get(Tasks.id == task_id).delete_instance()
+    return jsonify({'result': True})
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
-    task = filter(lambda t: t['id'] == task_id, tasks)
-    if len(task) == 0:
-        abort(404)
-    if not request.json:
-        abort(400)
-    if 'title' in request.json and type(request.json['title']) != unicode:
-        abort(400)
-    if 'description' in request.json and type(request.json['description']) is not unicode:
-        abort(400)
-    if 'done' in request.json and type(request.json['done']) is not bool:
-        abort(400)
-    task[0]['title'] = request.json.get('title', task[0]['title'])
-    task[0]['description'] = request.json.get('description', task[0]['description'])
-    task[0]['done'] = request.json.get('done', task[0]['done'])
-    return jsonify({'task': task[0]})
-
-@app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
-def delete_task(task_id):
-    task = filter(lambda t: t['id'] == task_id, tasks)
-    if len(task) == 0:
-        abort(404)
-    tasks.remove(task[0])
-    return jsonify({'result': True})
-  
+    tsk = Tasks.get(Tasks.id == task_id)
+    tsk.title = request.json.get('title')
+    tsk.description = request.json.get('description')
+    tsk.done = request.json.get('done')
+    tsk.save()
+    return jsonify(tsk)
